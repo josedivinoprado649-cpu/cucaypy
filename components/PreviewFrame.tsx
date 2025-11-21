@@ -12,23 +12,37 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ files }) => {
     const jsFile = files.find(f => f.name === 'script.js');
 
     if (!htmlFile) {
-      return '<div style="padding: 20px; font-family: sans-serif; color: #64748b;">index.html not found</div>';
+      return '<div style="display:flex;height:100vh;align-items:center;justify-content:center;color:#64748b;font-family:sans-serif;">index.html not found</div>';
     }
 
     let content = htmlFile.content;
 
     // Inject CSS directly to ensure it renders in the iframe
+    // Uses regex that handles attributes in any order and different quoting styles
     if (cssFile) {
-      // Remove existing link to style.css to avoid 404s
-      content = content.replace(/<link[^>]*href=["']style\.css["'][^>]*>/g, '');
-      content = content.replace('</head>', `<style>\n${cssFile.content}\n</style>\n</head>`);
+      const cssLinkRegex = /<link\s+[^>]*href=["']style\.css["'][^>]*>/gi;
+      content = content.replace(cssLinkRegex, '');
+      // Inject before head close or body open, or at the end if neither exists
+      const styleTag = `<style>\n/* Injected style.css */\n${cssFile.content}\n</style>`;
+      if (content.includes('</head>')) {
+        content = content.replace('</head>', `${styleTag}\n</head>`);
+      } else {
+        content = styleTag + content;
+      }
     }
 
     // Inject JS directly
     if (jsFile) {
-      // Remove existing script tag for script.js
-      content = content.replace(/<script[^>]*src=["']script\.js["'][^>]*><\/script>/g, '');
-      content = content.replace('</body>', `<script>\n${jsFile.content}\n</script>\n</body>`);
+      const jsScriptRegex = /<script\s+[^>]*src=["']script\.js["'][^>]*>\s*<\/script>/gi;
+      content = content.replace(jsScriptRegex, '');
+      
+      const scriptTag = `<script>\n/* Injected script.js */\ntry {\n${jsFile.content}\n} catch(err) { console.error('Runtime Error:', err); document.body.innerHTML += '<div style="position:fixed;top:0;left:0;background:red;color:white;padding:10px;z-index:9999">JS Error: ' + err.message + '</div>'; }\n</script>`;
+      
+      if (content.includes('</body>')) {
+        content = content.replace('</body>', `${scriptTag}\n</body>`);
+      } else {
+        content = content + scriptTag;
+      }
     }
 
     return content;
@@ -39,8 +53,8 @@ const PreviewFrame: React.FC<PreviewFrameProps> = ({ files }) => {
       <iframe
         title="Project Preview"
         srcDoc={srcDoc}
-        className="w-full h-full bg-white"
-        sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox"
+        className="w-full h-full bg-white border-0"
+        sandbox="allow-scripts allow-modals allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
       />
     </div>
   );

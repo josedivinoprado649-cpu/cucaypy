@@ -2,6 +2,8 @@ import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+const SYSTEM_INSTRUCTION = "You are a world-class senior web developer and UI/UX designer. You write clean, modern, semantic code. When modifying code, you prioritize functionality and aesthetics. You strictly adhere to the user's request.";
+
 export const analyzeCode = async (fileName: string, fileContent: string): Promise<string> => {
   try {
     const prompt = `
@@ -21,6 +23,9 @@ export const analyzeCode = async (fileName: string, fileContent: string): Promis
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION
+      }
     });
 
     return response.text || "No analysis could be generated.";
@@ -36,7 +41,6 @@ export const modifyCode = async (fileName: string, fileContent: string, instruct
 
     const textPart = {
         text: `
-        You are an expert web developer and builder assisting a user in real-time.
         The user wants to modify the file "${fileName}".
         
         Current Code:
@@ -47,17 +51,14 @@ export const modifyCode = async (fileName: string, fileContent: string, instruct
         User Instructions:
         "${instructions}"
         
-        ${imageBase64 ? 'IMPORTANT: The user has provided an image. Analyze the visual design, layout, colors, and structure of the image and apply it to the code.' : ''}
+        ${imageBase64 ? 'IMPORTANT: The user has provided an image. Analyze the visual design, layout, colors, and structure of the image and apply it to the code pixel-perfectly where possible.' : ''}
         
-        Goal: Implement the user's request into the code. 
+        Goal: Return the FULL updated content of the file based on the request.
         
         IMPORTANT RULES:
-        1. **Images**: If the user asks to add an image or photo, use a high-quality random placeholder URL. 
-           - For specific topics: "https://source.unsplash.com/random/800x600/?nature" (replace 'nature' with context).
-           - Or use "https://picsum.photos/800/600".
-        2. **No Markdown**: Return ONLY the full, updated content of the file. Do NOT include markdown code fences (like \`\`\`html). 
-        3. **No Chat**: Do NOT include any conversational text.
-        4. **Valid Code**: The output must be valid code for the file type.
+        1. **Images**: If adding images, use reliable placeholders like "https://picsum.photos/800/600" or specific unsplash sources.
+        2. **Output Format**: Return ONLY the raw code. Do NOT wrap it in markdown code blocks (like \`\`\`html ... \`\`\`). Do NOT include any conversational text.
+        3. **Completeness**: Do not use placeholders like "// ... rest of code". Return the complete file.
       `
     };
 
@@ -81,17 +82,24 @@ export const modifyCode = async (fileName: string, fileContent: string, instruct
     }
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-flash', // Using 2.5 Flash for speed and reasoning on code
       contents: contents,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        temperature: 0.2, // Lower temperature for more deterministic code output
+      }
     });
 
     let rawText = response.text || "";
     
-    // Advanced cleanup to handle markdown blocks if the model disobeys
-    const codeBlockMatch = rawText.match(/^```(?:\w+)?\s*([\s\S]*?)\s*```$/);
-    if (codeBlockMatch) {
+    // Robust cleanup to handle markdown blocks if the model disobeys
+    // 1. Try to match content inside ```language ... ```
+    const codeBlockMatch = rawText.match(/```(?:\w+)?\s*([\s\S]*?)\s*```/);
+    
+    if (codeBlockMatch && codeBlockMatch[1]) {
         rawText = codeBlockMatch[1];
     } else {
+        // 2. Fallback: simply strip start/end fences if they exist loosely
         rawText = rawText.replace(/^```\w*\s*/, '').replace(/\s*```$/, '');
     }
     

@@ -77,7 +77,7 @@ const App: React.FC = () => {
         const aiMsg: ChatMessage = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            content: `I've updated ${activeFile.name} based on your request. Check the Preview tab!`,
+            content: `I've updated ${activeFile.name}. Check the Preview tab!`,
             timestamp: Date.now()
         };
         setChatMessages(prev => [...prev, aiMsg]);
@@ -128,7 +128,7 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* Left Column: Editor/Preview (Span 8) */}
-          <div className="lg:col-span-8 flex flex-col h-[650px] shadow-xl shadow-slate-200/50 rounded-xl border border-white/50 overflow-hidden ring-1 ring-slate-900/5 bg-white">
+          <div className="lg:col-span-8 flex flex-col h-[700px] shadow-xl shadow-slate-200/50 rounded-xl border border-white/50 overflow-hidden ring-1 ring-slate-900/5 bg-white">
             
             {/* Panel Header Toolbar */}
             <div className="flex items-center justify-between bg-slate-100/80 backdrop-blur border-b border-slate-200 px-2 py-1.5 shrink-0">
@@ -192,7 +192,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Right Column: AI Panel (Span 4) */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24">
+          <div className="lg:col-span-4 lg:sticky lg:top-24 h-[700px]">
             <AnalysisPanel 
                 status={analysisStatus} 
                 analysis={currentAnalysis} 

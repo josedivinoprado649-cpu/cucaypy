@@ -102,7 +102,7 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ status, analysis, activeF
           }`}
         >
           <PenTool className="w-4 h-4" />
-          Builder
+          Agent Builder
         </button>
       </div>
 
@@ -222,7 +222,7 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ status, analysis, activeF
                     {isLoading && (
                          <div className="flex justify-start animate-in fade-in duration-300">
                             <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-none px-4 py-4 shadow-sm flex items-center gap-1.5">
-                                <span className="text-xs text-slate-400 font-medium mr-2">Thinking</span>
+                                <span className="text-xs text-slate-400 font-medium mr-2">Generating</span>
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
@@ -285,7 +285,7 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ status, analysis, activeF
                             <input
                                 type="text"
                                 className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-full focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 text-sm transition-all group-hover:bg-white"
-                                placeholder="Describe changes or select a quick key..."
+                                placeholder="Describe changes (e.g. 'Change background to dark blue')..."
                                 value={instructions}
                                 onChange={(e) => setInstructions(e.target.value)}
                                 disabled={isLoading}
