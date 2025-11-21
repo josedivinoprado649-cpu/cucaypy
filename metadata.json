@@ -1,0 +1,8 @@
+{
+  "name": "cucaypy",
+  "description": "A modern React application created by Jose Divino Prado da Lapa to view and analyze the Cucaypy project files using Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
